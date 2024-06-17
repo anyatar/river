@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: Recording API
+  description: API for managing recordings and takes.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /login:
+    post:
+      summary: User login
+      tags:
+        - Login
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email of the user
+                password:
+                  type: string
+                  description: The password of the user
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Authentication token
+        '401':
+          description: Invalid credentials
+
+  /take:
+    post:
+      summary: Create a new take
+      tags:
+        - Take
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Data for the new take
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the take
+      responses:
+        '201':
+          description: Take created successfully
+        '400':
+          description: Invalid request
+
+  /take/{takeId}/status:
+    get:
+      summary: Get details of a specific take
+      tags: 
+        - Take
+      security: 
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: takeId
+          required: true
+          schema:
+            type: string
+          description: The ID of the take to retrieve
+      responses:
+        '200':
+          description: Take details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  takeId:
+                    type: string
+                  title:
+                    type: string
+                  recordings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        recordingId:
+                          type: string
+                        participant:
+                          type: string
+                        progress:
+                          type: number
+                  status:
+                    type: string
+        '404':
+          description: Take not found
+
+  /recording:
+    post:
+      summary: Create a new recording
+      tags: 
+        - Recording
+      security: 
+        - bearerAuth: []
+      requestBody:
+        description: Data for the new recording
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                takeId:
+                  type: string
+                  description: The ID of the take
+                participant:
+                  type: string
+                  description: The participant creating the recording
+      responses:
+        '201':
+          description: Recording created successfully
+        '400':
+          description: Invalid request
+
+  /recording/{recordingId}:
+    patch:
+      summary: Update the progress of a recording
+      tags:
+        - Recording
+      security: 
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: recordingId
+          required: true
+          schema:
+            type: string
+          description: The ID of the recording to update
+      requestBody:
+        description: Data for updating the recording
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress:
+                  type: number
+                  description: The progress of the recording
+      responses:
+        '200':
+          description: Recording updated successfully
+        '400':
+          description: Invalid request
+        '404':
+          description: Recording not found
+  
+    get:
+      summary: Get details of a specific recording
+      tags:
+        - Recording
+      parameters:
+        - in: path
+          name: recordingId
+          required: true
+          schema:
+            type: string
+          description: The ID of the recording to retrieve
+      responses:
+        '200':
+          description: Recording details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recordingId:
+                    type: string
+                  takeId:
+                    type: string
+                  participant:
+                    type: string
+                  progress:
+                    type: number
+                  status:
+                    type: string
+        '404':
+          description: Recording not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
